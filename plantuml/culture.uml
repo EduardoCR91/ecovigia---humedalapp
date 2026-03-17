@@ -1,0 +1,14 @@
+@startuml
+left to right direction
+actor "Usuario" as user
+
+rectangle "Memoria\ndel Humedal" {
+  usecase "Ver línea de tiempo\nhistórica" as UC_TIMELINE
+  usecase "Abrir detalle de un\nmomento histórico" as UC_TIMELINE_DETAIL
+  usecase "Cerrar ventana emergente\nde detalle" as UC_CLOSE_DETAIL
+}
+
+user -- UC_TIMELINE
+user -- UC_TIMELINE_DETAIL
+user -- UC_CLOSE_DETAIL
+@enduml

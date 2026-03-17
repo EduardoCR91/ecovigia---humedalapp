@@ -1,0 +1,29 @@
+@startuml
+
+left to right direction
+
+actor Usuario
+
+rectangle Sistema {
+
+  (Registrarse) as UC1
+  (Ingresar nombre de usuario) as UC2
+  (Ingresar correo electrónico) as UC3
+  (Ingresar contraseña) as UC4
+  (Crear cuenta) as UC5
+  (Asignar rol \"usuario\" por defecto) as UC7
+  (Iniciar sesión) as UC6
+
+}
+
+Usuario --> UC1
+Usuario --> UC6
+
+UC1 .> UC2 : <<include>>
+UC1 .> UC3 : <<include>>
+UC1 .> UC4 : <<include>>
+UC1 .> UC5 : <<include>>
+UC5 .> UC7 : <<include>>
+UC7 .> (Supabase - profiles.role = 'user') : <<configurar>>
+
+@enduml

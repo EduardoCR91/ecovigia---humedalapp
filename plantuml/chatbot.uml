@@ -1,0 +1,15 @@
+@startuml
+left to right direction
+actor "Usuario" as user
+
+rectangle "Chatbot\n\n" {
+  usecase "Enviar Mensaje" as UC_SEND_MESSAGE
+  usecase "Recibir respuesta educativa\nestructurada" as UC_RECEIVE_MESSAGE
+}
+
+user -- UC_SEND_MESSAGE
+UC_RECEIVE_MESSAGE -- user
+
+UC_SEND_MESSAGE .> (Servicio Gemini) : <<consulta>>
+UC_RECEIVE_MESSAGE .> (Servicio Gemini) : <<respuesta formateada>>
+@enduml

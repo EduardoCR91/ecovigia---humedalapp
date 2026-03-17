@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+actor "Usuario" as user
+
+rectangle "Navegación" {
+  usecase "Navegar a Inicio" as UC_NAV_HOME
+  usecase "Navegar a Monitoreo" as UC_NAV_MONITORING
+  usecase "Navegar a Educación" as UC_NAV_EDUCATION
+  usecase "Navegar a Comunidad" as UC_NAV_PARTICIPATION
+  usecase "Navegar a Memoria" as UC_NAV_CULTURE
+  usecase "Navegar a Chatbot" as UC_NAV_CHAT
+}
+
+user -- UC_NAV_HOME
+user -- UC_NAV_MONITORING
+user -- UC_NAV_EDUCATION
+user -- UC_NAV_PARTICIPATION
+user -- UC_NAV_CULTURE
+user -- UC_NAV_CHAT
+@enduml

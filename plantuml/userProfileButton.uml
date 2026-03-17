@@ -1,0 +1,12 @@
+@startuml
+left to right direction
+actor "Usuario" as user
+
+rectangle "Menú superior\nEcoVigia!" {
+  usecase "Ver nombre de la app" as UC_VIEW_BRAND
+  usecase "Abrir menú de perfil\n(botón sándwich)" as UC_OPEN_PROFILE
+}
+
+user -- UC_VIEW_BRAND
+user -- UC_OPEN_PROFILE
+@enduml

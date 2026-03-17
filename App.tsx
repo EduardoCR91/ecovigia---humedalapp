@@ -1,0 +1,97 @@
+
+import React, { useState } from 'react';
+import Navigation from './components/Navigation';
+import Dashboard from './components/Dashboard';
+import Monitoring from './components/Monitoring';
+import Education from './components/Education';
+import Participation from './components/Participation';
+import Culture from './components/Culture';
+import Chatbot from './components/Chatbot';
+import { AppTab } from './types';
+import { AuthProvider, useAuth } from './components/AuthContext';
+import AuthScreen from './components/AuthScreen';
+import UserProfilePanel from './components/UserProfilePanel';
+import { Menu } from 'lucide-react';
+
+const AppContent: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<AppTab>(AppTab.HOME);
+  const { user, loading } = useAuth();
+  const [showProfilePanel, setShowProfilePanel] = useState(false);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case AppTab.HOME:
+        return <Dashboard setActiveTab={setActiveTab} />;
+      case AppTab.MONITORING:
+        return user ? <Monitoring /> : <AuthScreen />;
+      case AppTab.EDUCATION:
+        return <Education />;
+      case AppTab.PARTICIPATION:
+        return user ? <Participation /> : <AuthScreen />;
+      case AppTab.CULTURE:
+        return <Culture />;
+      case AppTab.CHAT:
+        return <Chatbot />;
+      default:
+        return <Dashboard setActiveTab={setActiveTab} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f8faf8] safe-area-bottom pb-20">
+      <main className="max-w-md mx-auto min-h-screen bg-white shadow-xl relative overflow-x-hidden">
+        {user && (
+          <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 pt-4 pointer-events-none">
+            <div className="pointer-events-auto bg-white/90 px-3 py-1.5 rounded-full shadow-sm border border-emerald-100">
+              <span className="text-sm font-bold text-emerald-800 tracking-tight">EcoVigia!</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowProfilePanel(true)}
+              className="pointer-events-auto bg-white/90 backdrop-blur border border-emerald-100 shadow-md w-9 h-9 rounded-full flex items-center justify-center text-emerald-700 active:scale-95 transition-transform"
+              aria-label="Abrir menú de perfil"
+              disabled={loading || !user}
+            >
+              <Menu size={18} />
+            </button>
+          </div>
+        )}
+        <div className={user ? 'pt-14' : ''}>
+          {loading ? (
+            <div className="p-6 text-center text-gray-500 text-sm">Cargando sesión...</div>
+          ) : (
+            renderContent()
+          )}
+        </div>
+      </main>
+      {showProfilePanel && <UserProfilePanel onClose={() => setShowProfilePanel(false)} />}
+      <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      
+      {/* Global CSS for animations */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.4s ease-out forwards;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+const App: React.FC = () => (
+  <AuthProvider>
+    <AppContent />
+  </AuthProvider>
+);
+
+export default App;

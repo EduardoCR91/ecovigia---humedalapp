@@ -1,0 +1,24 @@
+@startuml
+left to right direction
+actor "Usuario" as user
+
+rectangle "Participación" {
+  usecase "Ver feed de consultas\nde la comunidad" as UC_VIEW_FEED
+  usecase "Filtrar por\núltimos o destacados" as UC_FILTER_FEED
+  usecase "Publicar nueva consulta" as UC_CREATE_POST
+  usecase "Dar like a una\nconsulta" as UC_LIKE_POST
+  usecase "Quitar like a una\nconsulta" as UC_UNLIKE_POST
+  usecase "Editar consulta propia" as UC_EDIT_POST
+  usecase "Eliminar consulta propia" as UC_DELETE_POST
+  usecase "Ver perfil de participación\n(reporte y likes)" as UC_VIEW_PROFILE
+}
+
+user -- UC_VIEW_FEED
+user -- UC_FILTER_FEED
+user -- UC_CREATE_POST
+user -- UC_LIKE_POST
+user -- UC_UNLIKE_POST
+user -- UC_EDIT_POST
+user -- UC_DELETE_POST
+user -- UC_VIEW_PROFILE
+@enduml

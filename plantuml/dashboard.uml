@@ -1,0 +1,41 @@
+@startuml
+left to right direction
+actor "Usuario" as user
+actor "Administrador" as admin
+
+rectangle "Inicio(EcoVigia!)\n\n" {
+  usecase "Ver estado del clima" as UC_WEATHER
+  usecase "Ver tarjeta\n\"Biodiversidad Local\"" as UC_BIODIVERSITY
+  usecase "Ver noticias recientes" as UC_NEWS
+  usecase "Ir a Educación" as UC_NAV_EDUCATION
+  usecase "Ir a Monitoreo" as UC_NAV_MONITORING
+  usecase "Iniciar reporte desde Inicio" as UC_START_REPORT
+
+  usecase "Crear noticia" as UC_NEWS_CREATE
+  usecase "Editar noticia" as UC_NEWS_EDIT
+  usecase "Eliminar noticia" as UC_NEWS_DELETE
+  usecase "Tomar foto para noticia" as UC_NEWS_TAKE_PHOTO
+  usecase "Subir imagen de noticia" as UC_NEWS_UPLOAD_IMAGE
+}
+
+user -- UC_WEATHER
+user -- UC_BIODIVERSITY
+user -- UC_NEWS
+user -- UC_NAV_EDUCATION
+user -- UC_NAV_MONITORING
+user -- UC_START_REPORT
+
+admin -- UC_NEWS_CREATE
+admin -- UC_NEWS_EDIT
+admin -- UC_NEWS_DELETE
+admin -- UC_NEWS_TAKE_PHOTO
+admin -- UC_NEWS_UPLOAD_IMAGE
+
+UC_BIODIVERSITY .> (Educación) : <<include>>
+UC_NAV_EDUCATION .> (Educación) : <<include>>
+UC_NAV_MONITORING .> (Monitoreo) : <<include>>
+UC_START_REPORT .> (Monitoreo) : <<include>>
+UC_NEWS_CREATE .> (Supabase - tabla news) : <<access>>
+UC_NEWS_EDIT .> (Supabase - tabla news) : <<access>>
+UC_NEWS_DELETE .> (Supabase - tabla news) : <<access>>
+@enduml

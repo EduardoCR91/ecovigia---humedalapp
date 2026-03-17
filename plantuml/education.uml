@@ -1,0 +1,38 @@
+@startuml
+left to right direction
+actor "Usuario" as user
+actor "Administrador" as admin
+
+rectangle "Educació\n\n" {
+  usecase "Explorar módulo\n"Aprende y protege"" as UC_LEARN_MODULE
+  usecase "Abrir ficha educativa\nen ventana emergente" as UC_OPEN_CARD
+  usecase "Cerrar ficha educativa" as UC_CLOSE_CARD
+
+  usecase "Ver eventos futuros" as UC_VIEW_FUTURE_EVENTS
+  usecase "Ver últimos eventos pasados" as UC_VIEW_PAST_EVENTS
+
+  usecase "Crear evento educativo" as UC_CREATE_EVENT
+  usecase "Editar evento educativo" as UC_EDIT_EVENT
+  usecase "Eliminar evento educativo" as UC_DELETE_EVENT
+  usecase "Tomar foto para evento" as UC_EVENT_TAKE_PHOTO
+  usecase "Subir imagen de evento" as UC_EVENT_UPLOAD_IMAGE
+}
+
+user -- UC_LEARN_MODULE
+user -- UC_OPEN_CARD
+user -- UC_CLOSE_CARD
+user -- UC_VIEW_FUTURE_EVENTS
+user -- UC_VIEW_PAST_EVENTS
+
+admin -- UC_CREATE_EVENT
+admin -- UC_EDIT_EVENT
+admin -- UC_DELETE_EVENT
+admin -- UC_EVENT_TAKE_PHOTO
+admin -- UC_EVENT_UPLOAD_IMAGE
+
+UC_VIEW_FUTURE_EVENTS .> (Supabase - tabla events) : <<consultar>>
+UC_VIEW_PAST_EVENTS .> (Supabase - tabla events) : <<consultar>>
+UC_CREATE_EVENT .> (Supabase - tabla events) : <<insertar>>
+UC_EDIT_EVENT .> (Supabase - tabla events) : <<actualizar>>
+UC_DELETE_EVENT .> (Supabase - tabla events) : <<eliminar>>
+@enduml

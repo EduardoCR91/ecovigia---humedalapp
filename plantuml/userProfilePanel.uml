@@ -1,0 +1,28 @@
+@startuml
+left to right direction
+actor "Usuario" as user
+actor "Administrador" as admin
+
+rectangle "Panel de Perfil de Usuario\n\n" {
+  usecase "Ver información de perfil" as UC_VIEW_PROFILE
+  usecase "Actualizar nombre visible\ny nombre de usuario" as UC_UPDATE_PROFILE
+  usecase "Cerrar panel de perfil" as UC_CLOSE_PANEL
+  usecase "Cerrar sesión" as UC_SIGN_OUT
+
+  usecase "Buscar usuarios\npor nombre o correo" as UC_SEARCH_USERS
+  usecase "Cambiar rol de usuario\n(usuario ↔ admin)" as UC_CHANGE_ROLE
+}
+
+user -- UC_VIEW_PROFILE
+user -- UC_UPDATE_PROFILE
+user -- UC_CLOSE_PANEL
+user -- UC_SIGN_OUT
+
+admin -- UC_SEARCH_USERS
+admin -- UC_CHANGE_ROLE
+
+UC_VIEW_PROFILE <. (Menú superior EcoVigia!) : <<include>>
+UC_UPDATE_PROFILE .> (Supabase - tabla profiles) : <<actualizar>>
+UC_SEARCH_USERS .> (Supabase - tabla profiles) : <<consultar>>
+UC_CHANGE_ROLE .> (Supabase - tabla profiles) : <<actualizar rol>>
+@enduml

@@ -1,0 +1,54 @@
+@startuml
+left to right direction
+actor "Usuario" as user
+actor "Administrador" as admin
+
+rectangle "Monitoreo" {
+  usecase "Ver mapa de reportes" as UC_VIEW_MAP
+  usecase "Centrar mapa\nen mi ubicación" as UC_CENTER_ON_USER
+  usecase "Ajustar zoom del mapa" as UC_ZOOM_MAP
+
+  usecase "Filtrar reportes\n(fauna, flora, riesgo)" as UC_FILTER_REPORTS
+  usecase "Ver estadísticas\nde reportes" as UC_VIEW_STATS
+
+  usecase "Ver lista de\núltimos reportes" as UC_VIEW_LIST
+  usecase "Cambiar página de\nreportes" as UC_PAGINATE
+
+  usecase "Crear nuevo reporte" as UC_CREATE_REPORT
+  usecase "Seleccionar punto\nen el mapa" as UC_SELECT_LOCATION
+  usecase "Tomar foto para reporte" as UC_CAPTURE_PHOTO
+  usecase "Subir imagen al reporte" as UC_UPLOAD_IMAGE
+  usecase "Guardar reporte" as UC_SAVE_REPORT
+
+  usecase "Ver detalle de reporte\nen ventana emergente" as UC_VIEW_DETAIL
+  usecase "Cerrar detalle\nde reporte" as UC_CLOSE_DETAIL
+
+  usecase "Editar reporte propio" as UC_EDIT_REPORT
+  usecase "Eliminar reporte" as UC_DELETE_REPORT
+}
+
+user -- UC_VIEW_MAP
+user -- UC_CENTER_ON_USER
+user -- UC_ZOOM_MAP
+user -- UC_FILTER_REPORTS
+user -- UC_VIEW_STATS
+user -- UC_VIEW_LIST
+user -- UC_PAGINATE
+user -- UC_CREATE_REPORT
+user -- UC_SELECT_LOCATION
+user -- UC_CAPTURE_PHOTO
+user -- UC_UPLOAD_IMAGE
+user -- UC_SAVE_REPORT
+user -- UC_VIEW_DETAIL
+user -- UC_CLOSE_DETAIL
+user -- UC_EDIT_REPORT
+
+admin -- UC_DELETE_REPORT
+
+UC_CREATE_REPORT ..> UC_SELECT_LOCATION : <<include>>
+UC_CREATE_REPORT ..> UC_CAPTURE_PHOTO : <<include>>
+UC_CREATE_REPORT ..> UC_UPLOAD_IMAGE : <<include>>
+UC_SAVE_REPORT ..> (Supabase - tabla reports) : <<insertar>>
+UC_EDIT_REPORT ..> (Supabase - tabla reports) : <<actualizar>>
+UC_DELETE_REPORT ..> (Supabase - tabla reports) : <<eliminar>>
+@enduml

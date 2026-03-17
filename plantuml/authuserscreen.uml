@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+actor "Usuario" as user
+
+rectangle "Autenticación\n\n" {
+  usecase "Iniciar Sesión" as UC_LOGIN
+  usecase "Registrarse" as UC_REGISTER
+  usecase "Crear perfil de usuario\npor defecto" as UC_CREATE_PROFILE
+}
+
+user -- UC_LOGIN
+user -- UC_REGISTER
+
+UC_REGISTER .> UC_CREATE_PROFILE : <<include>>
+UC_CREATE_PROFILE .> (Supabase - auth & profiles) : <<insertar>>
+UC_LOGIN .> (Supabase - auth) : <<autenticar>>
+@enduml
