@@ -4,7 +4,7 @@ left to right direction
 
 actor Usuario
 
-rectangle Sistema {
+rectangle Registro {
 
   (Registrarse) as UC1
   (Ingresar nombre de usuario) as UC2

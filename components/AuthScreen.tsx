@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
+import { useLanguage } from './LanguageContext';
 
 const AuthScreen: React.FC = () => {
   const { signIn, signUp } = useAuth();
+  const { lang } = useLanguage();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,11 +27,17 @@ const AuthScreen: React.FC = () => {
     if (err) {
       setError(err);
     } else {
-      setSuccess(
-        mode === 'login'
-          ? 'Inicio de sesión exitoso.'
-          : 'Registro exitoso. Revisa tu correo si se requiere confirmación.'
-      );
+      if (mode === 'login') {
+        setSuccess(
+          lang === 'en' ? 'Sign in successful.' : 'Inicio de sesión exitoso.'
+        );
+      } else {
+        setSuccess(
+          lang === 'en'
+            ? 'Registration successful. Check your email if confirmation is required.'
+            : 'Registro exitoso. Revisa tu correo si se requiere confirmación.'
+        );
+      }
     }
 
     setLoading(false);
@@ -38,10 +46,18 @@ const AuthScreen: React.FC = () => {
   return (
     <div className="p-6 animate-fadeIn">
       <h1 className="text-2xl font-bold text-emerald-900 mb-4">
-        {mode === 'login' ? 'Inicia sesión' : 'Crea tu cuenta'}
+        {mode === 'login'
+          ? lang === 'en'
+            ? 'Sign in'
+            : 'Inicia sesión'
+          : lang === 'en'
+          ? 'Create your account'
+          : 'Crea tu cuenta'}
       </h1>
       <p className="text-sm text-gray-500 mb-6">
-        Para participar en la comunidad y registrar reportes ciudadanos, inicia sesión o regístrate.
+        {lang === 'en'
+          ? 'To participate in the community and record citizen reports, please sign in or register.'
+          : 'Para participar en la comunidad y registrar reportes ciudadanos, inicia sesión o regístrate.'}
       </p>
 
       <div className="flex gap-2 mb-6">
@@ -53,7 +69,7 @@ const AuthScreen: React.FC = () => {
               : 'bg-gray-100 text-gray-600'
           }`}
         >
-          Iniciar sesión
+          {lang === 'en' ? 'Sign in' : 'Iniciar sesión'}
         </button>
         <button
           onClick={() => setMode('register')}
@@ -63,7 +79,7 @@ const AuthScreen: React.FC = () => {
               : 'bg-gray-100 text-gray-600'
           }`}
         >
-          Registrarse
+          {lang === 'en' ? 'Register' : 'Registrarse'}
         </button>
       </div>
 
@@ -71,7 +87,7 @@ const AuthScreen: React.FC = () => {
         {mode === 'register' && (
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">
-              Nombre de usuario (único)
+              {lang === 'en' ? 'Username (unique)' : 'Nombre de usuario (único)'}
             </label>
             <input
               type="text"
@@ -82,14 +98,16 @@ const AuthScreen: React.FC = () => {
               placeholder="Ej: humedal_guardian"
             />
             <p className="text-[10px] text-gray-400 mt-1">
-              Se mostrará como @usuario en tus reportes.
+              {lang === 'en'
+                ? 'It will appear as @username in your reports.'
+                : 'Se mostrará como @usuario en tus reportes.'}
             </p>
           </div>
         )}
 
         <div>
           <label className="block text-xs font-semibold text-gray-500 mb-1">
-            Correo electrónico
+            {lang === 'en' ? 'Email' : 'Correo electrónico'}
           </label>
           <input
             type="email"
@@ -97,13 +115,15 @@ const AuthScreen: React.FC = () => {
             value={email}
             onChange={e => setEmail(e.target.value)}
             className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            placeholder="tu-correo@ejemplo.com"
+            placeholder={
+              lang === 'en' ? 'your-email@example.com' : 'tu-correo@ejemplo.com'
+            }
           />
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-gray-500 mb-1">
-            Contraseña
+            {lang === 'en' ? 'Password' : 'Contraseña'}
           </label>
           <input
             type="password"
@@ -112,7 +132,9 @@ const AuthScreen: React.FC = () => {
             value={password}
             onChange={e => setPassword(e.target.value)}
             className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            placeholder="Mínimo 6 caracteres"
+            placeholder={
+              lang === 'en' ? 'Minimum 6 characters' : 'Mínimo 6 caracteres'
+            }
           />
         </div>
 
@@ -134,9 +156,15 @@ const AuthScreen: React.FC = () => {
           className="w-full py-3 bg-emerald-600 text-white rounded-xl text-sm font-semibold disabled:opacity-60"
         >
           {loading
-            ? 'Procesando...'
+            ? lang === 'en'
+              ? 'Processing...'
+              : 'Procesando...'
             : mode === 'login'
-            ? 'Entrar'
+            ? lang === 'en'
+              ? 'Enter'
+              : 'Entrar'
+            : lang === 'en'
+            ? 'Create account'
             : 'Crear cuenta'}
         </button>
       </form>

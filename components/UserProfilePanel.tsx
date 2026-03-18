@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, Shield, Search } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { supabase } from '../services/supabaseClient';
+import { useLanguage } from './LanguageContext';
 
 interface UserProfilePanelProps {
   onClose: () => void;
@@ -9,6 +10,7 @@ interface UserProfilePanelProps {
 
 const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
   const { user, signOut } = useAuth();
+  const { lang, setLang } = useLanguage();
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -151,15 +153,36 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
           <X size={20} />
         </button>
 
-        <h2 className="text-xl font-bold text-emerald-900 mb-1">Tu perfil</h2>
-        <p className="text-xs text-gray-500 mb-4">
-          Revisa tus datos de cuenta y ajusta tu nombre visible o nombre de usuario.
-        </p>
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div>
+            <h2 className="text-xl font-bold text-emerald-900 mb-1">Tu perfil</h2>
+            <p className="text-xs text-gray-500">
+              Revisa tus datos de cuenta y ajusta tu nombre visible o nombre de usuario.
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">
+              Idioma
+            </span>
+            <select
+              value={lang}
+              onChange={e => setLang(e.target.value === 'en' ? 'en' : 'es')}
+              className="text-[11px] border border-gray-200 rounded-lg px-2 py-1 bg-white"
+            >
+              <option value="es">Español</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+        </div>
 
         <div className="mb-4 text-xs text-gray-600 bg-emerald-50/60 border border-emerald-100 rounded-2xl p-3">
-          <p className="font-semibold text-emerald-800 mb-1">Datos de inicio de sesión</p>
+          <p className="font-semibold text-emerald-800 mb-1">
+            {lang === 'en' ? 'Sign‑in data' : 'Datos de inicio de sesión'}
+          </p>
           <p>
-            <span className="font-medium">Correo:&nbsp;</span>
+            <span className="font-medium">
+              {lang === 'en' ? 'Email:' : 'Correo:'}&nbsp;
+            </span>
             {user.email}
           </p>
         </div>
@@ -167,7 +190,7 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">
-              Nombre visible
+              {lang === 'en' ? 'Display name' : 'Nombre visible'}
             </label>
             <input
               type="text"
@@ -180,7 +203,7 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
 
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">
-              Nombre de usuario
+              {lang === 'en' ? 'Username' : 'Nombre de usuario'}
             </label>
             <input
               type="text"
@@ -190,7 +213,9 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
               placeholder="Ej: humedal_guardian"
             />
             <p className="text-[10px] text-gray-400 mt-1">
-              Se usará como @usuario en tus reportes. Más adelante validaremos que no se repita.
+              {lang === 'en'
+                ? 'It will be used as @username in your reports. Later we will validate that it is unique.'
+                : 'Se usará como @usuario en tus reportes. Más adelante validaremos que no se repita.'}
             </p>
           </div>
 
@@ -210,7 +235,13 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
             disabled={loading}
             className="w-full py-3 bg-emerald-600 text-white rounded-xl text-sm font-semibold disabled:opacity-60"
           >
-            {loading ? 'Guardando...' : 'Guardar cambios'}
+            {loading
+              ? lang === 'en'
+                ? 'Saving...'
+                : 'Guardando...'
+              : lang === 'en'
+              ? 'Save changes'
+              : 'Guardar cambios'}
           </button>
         </form>
 
@@ -222,10 +253,12 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
               </div>
               <div>
                 <p className="text-xs font-bold text-emerald-900 uppercase tracking-widest">
-                  Gestión de usuarios
+                  {lang === 'en' ? 'User management' : 'Gestión de usuarios'}
                 </p>
                 <p className="text-[11px] text-gray-500">
-                  Busca por nombre de usuario o correo para cambiar el rol.
+                  {lang === 'en'
+                    ? 'Search by username or email to change the role.'
+                    : 'Busca por nombre de usuario o correo para cambiar el rol.'}
                 </p>
               </div>
             </div>
@@ -240,7 +273,11 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
                   value={userSearch}
                   onChange={e => setUserSearch(e.target.value)}
                   className="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Ej: humedal_guardian o correo"
+                  placeholder={
+                    lang === 'en'
+                      ? 'E.g.: humedal_guardian or email'
+                      : 'Ej: humedal_guardian o correo'
+                  }
                 />
               </div>
               <button
@@ -248,7 +285,13 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
                 disabled={userSearchLoading || !userSearch.trim()}
                 className="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-semibold disabled:opacity-60"
               >
-                {userSearchLoading ? 'Buscando...' : 'Buscar'}
+                {userSearchLoading
+                  ? lang === 'en'
+                    ? 'Searching...'
+                    : 'Buscando...'
+                  : lang === 'en'
+                  ? 'Search'
+                  : 'Buscar'}
               </button>
             </form>
 
@@ -272,10 +315,16 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
                   >
                     <div className="flex flex-col">
                       <span className="text-xs font-semibold text-gray-800">
-                        {u.display_name || u.username || 'Usuario sin nombre'}
+                        {u.display_name ||
+                          u.username ||
+                          (lang === 'en' ? 'User without name' : 'Usuario sin nombre')}
                       </span>
                       <span className="text-[10px] text-gray-500">
-                        {u.username ? `@${u.username}` : 'Sin usuario'}{' '}
+                        {u.username
+                          ? `@${u.username}`
+                          : lang === 'en'
+                          ? 'No username'
+                          : 'Sin usuario'}{' '}
                         {u.email ? `• ${u.email}` : ''}
                       </span>
                     </div>
@@ -285,15 +334,19 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ onClose }) => {
                         onChange={e => handleChangeManagedRole(u.id, e.target.value)}
                         className="text-[11px] border border-gray-200 rounded-lg px-2 py-1 bg-white"
                       >
-                        <option value="user">Usuario</option>
-                        <option value="admin">Administrador</option>
+                        <option value="user">
+                          {lang === 'en' ? 'User' : 'Usuario'}
+                        </option>
+                        <option value="admin">
+                          {lang === 'en' ? 'Administrator' : 'Administrador'}
+                        </option>
                       </select>
                       <button
                         type="button"
                         onClick={() => handleSaveManagedRole(u.id)}
                         className="text-[10px] text-emerald-700 font-semibold"
                       >
-                        Guardar
+                        {lang === 'en' ? 'Save' : 'Guardar'}
                       </button>
                     </div>
                   </div>

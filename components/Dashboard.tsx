@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { useAuth } from './AuthContext';
+import { useLanguage } from './LanguageContext';
 
 interface DashboardProps {
   setActiveTab: (tab: AppTab) => void;
@@ -44,17 +45,36 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   const [showNewsCamera, setShowNewsCamera] = useState(false);
   const newsVideoRef = useRef<HTMLVideoElement | null>(null);
   const newsCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { lang } = useLanguage();
 
   useEffect(() => {
     const loadNews = async () => {
-      const { data, error } = await supabase
-        .from('news')
-        .select('id, title, summary, image_url, published_at')
-        .order('published_at', { ascending: false })
-        .limit(5);
+      try {
+        if (!navigator.onLine) {
+          const cached = window.localStorage.getItem('ecovigia_news');
+          if (cached) {
+            setNews(JSON.parse(cached));
+          }
+          return;
+        }
 
-      if (!error && data) {
-        setNews(data as NewsItem[]);
+        const { data, error } = await supabase
+          .from('news')
+          .select('id, title, summary, image_url, published_at')
+          .order('published_at', { ascending: false })
+          .limit(5);
+
+        if (!error && data) {
+          const items = data as NewsItem[];
+          setNews(items);
+          try {
+            window.localStorage.setItem('ecovigia_news', JSON.stringify(items));
+          } catch {
+            // ignore
+          }
+        }
+      } catch {
+        // ignore fetch errors, se usará caché si existe
       }
     };
 
@@ -181,7 +201,11 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona una imagen válida para la noticia.');
+      alert(
+        lang === 'en'
+          ? 'Please select a valid image for the news item.'
+          : 'Por favor selecciona una imagen válida para la noticia.'
+      );
       return;
     }
     const reader = new FileReader();
@@ -247,7 +271,11 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       if (fileInputCameraRef.current) fileInputCameraRef.current.value = '';
       if (fileInputGalleryRef.current) fileInputGalleryRef.current.value = '';
     } else if (error) {
-      alert('No se pudo guardar la noticia. Verifica tus permisos de administrador.');
+      alert(
+        lang === 'en'
+          ? 'The news item could not be saved. Check your admin permissions.'
+          : 'No se pudo guardar la noticia. Verifica tus permisos de administrador.'
+      );
     }
 
     setSavingNews(false);
@@ -256,14 +284,20 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   const handleDeleteNews = async (id: string | number) => {
     if (
       !window.confirm(
-        '¿Seguro que deseas eliminar esta noticia? Esta acción no se puede deshacer.'
+        lang === 'en'
+          ? 'Are you sure you want to delete this news item? This action cannot be undone.'
+          : '¿Seguro que deseas eliminar esta noticia? Esta acción no se puede deshacer.'
       )
     ) {
       return;
     }
     const { error } = await supabase.from('news').delete().eq('id', id);
     if (error) {
-      alert('No se pudo eliminar la noticia.');
+      alert(
+        lang === 'en'
+          ? 'The news item could not be deleted.'
+          : 'No se pudo eliminar la noticia.'
+      );
     } else {
       setNews(prev => prev.filter(n => n.id !== id));
       if (editingNewsId === id) {
@@ -279,7 +313,11 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     <div className="flex flex-col gap-6 p-4 animate-fadeIn">
       <header className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold text-emerald-900">EcoVigia!</h1>
-        <p className="text-emerald-700">Explora y protege el Humedal de Techo</p>
+        <p className="text-emerald-700">
+          {lang === 'en'
+            ? 'Explore and protect the Techo Wetland'
+            : 'Explora y protege el Humedal de Techo'}
+        </p>
       </header>
 
       {/* Weather & Env Stats (Mocked) */}
@@ -287,19 +325,25 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         <div className="flex flex-col items-center gap-1">
           <Sun className="text-yellow-500" size={24} />
           <span className="text-sm font-semibold">18°C</span>
-          <span className="text-[10px] text-gray-500">Soleado</span>
+          <span className="text-[10px] text-gray-500">
+            {lang === 'en' ? 'Sunny' : 'Soleado'}
+          </span>
         </div>
         <div className="h-10 w-[1px] bg-gray-100" />
         <div className="flex flex-col items-center gap-1">
           <Droplets className="text-blue-500" size={24} />
           <span className="text-sm font-semibold">65%</span>
-          <span className="text-[10px] text-gray-500">Humedad</span>
+          <span className="text-[10px] text-gray-500">
+            {lang === 'en' ? 'Humidity' : 'Humedad'}
+          </span>
         </div>
         <div className="h-10 w-[1px] bg-gray-100" />
         <div className="flex flex-col items-center gap-1">
           <Wind className="text-emerald-500" size={24} />
           <span className="text-sm font-semibold">12 km/h</span>
-          <span className="text-[10px] text-gray-500">Calidad Aire</span>
+          <span className="text-[10px] text-gray-500">
+            {lang === 'en' ? 'Air quality' : 'Calidad Aire'}
+          </span>
         </div>
       </section>
 
@@ -318,10 +362,12 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           <div className="flex justify-between items-start">
             <div className="max-w-[70%]">
               <h2 className="text-white text-xl font-bold drop-shadow-sm">
-                Biodiversidad Local
+                {lang === 'en' ? 'Local biodiversity' : 'Biodiversidad Local'}
               </h2>
               <p className="text-white/90 text-sm">
-                Conoce las aves, plantas, anfibios e insectos del humedal.
+                {lang === 'en'
+                  ? 'Discover the birds, plants, amphibians and insects of the wetland.'
+                  : 'Conoce las aves, plantas, anfibios e insectos del humedal.'}
               </p>
             </div>
             <div className="flex flex-col items-center gap-1 text-emerald-50 drop-shadow-sm">
@@ -330,7 +376,9 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
             </div>
           </div>
           <p className="text-[11px] text-emerald-50">
-            Toca para explorar fichas educativas sobre la vida del humedal.
+            {lang === 'en'
+              ? 'Tap to explore educational cards about life in the wetland.'
+              : 'Toca para explorar fichas educativas sobre la vida del humedal.'}
           </p>
         </div>
       </div>
@@ -389,15 +437,23 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       >
         <Eye size={24} />
         <div className="text-left">
-          <span className="font-semibold text-sm block">Realizar un reporte</span>
+          <span className="font-semibold text-sm block">
+                        {lang === 'en'
+              ? 'Make a report'
+              : 'Realizar un reporte'}
+            </span>
           <span className="text-[11px] text-emerald-100">
-            Registra avistamientos y riesgos en el humedal
+            {lang === 'en'
+              ? 'Record sightings and risks in the wetland'
+              : 'Registra avistamientos y riesgos en el humedal'}
           </span>
         </div>
       </button>
 
       <section>
-        <h3 className="text-lg font-bold text-emerald-900 mb-3">Noticias Recientes</h3>
+        <h3 className="text-lg font-bold text-emerald-900 mb-3">
+          {lang === 'en' ? 'Recent news' : 'Noticias Recientes'}
+        </h3>
         {isAdmin && (
           <form
             onSubmit={handleSaveNews}
@@ -407,7 +463,9 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
               <div className="flex items-center gap-2">
                 <PlusCircle size={16} className="text-emerald-600" />
                 <p className="text-[10px] font-semibold text-gray-500 uppercase">
-                  Gestionar noticias (admins)
+                  {lang === 'en'
+                    ? 'Manage news (admins)'
+                    : 'Gestionar noticias (admins)'}
                 </p>
               </div>
               {editingNewsId && (
@@ -426,20 +484,24 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                   className="text-[10px] text-gray-400 hover:text-gray-600 flex items-center gap-1"
                 >
                   <X size={12} />
-                  Cancelar
+                  {lang === 'en' ? 'Cancel' : 'Cancelar'}
                 </button>
               )}
             </div>
             <input
               type="text"
-              placeholder="Título de la noticia"
+              placeholder={
+                lang === 'en' ? 'News title' : 'Título de la noticia'
+              }
               value={newsTitle}
               onChange={e => setNewsTitle(e.target.value)}
               className="w-full p-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
               required
             />
             <textarea
-              placeholder="Resumen de la noticia"
+              placeholder={
+                lang === 'en' ? 'News summary' : 'Resumen de la noticia'
+              }
               value={newsSummary}
               onChange={e => setNewsSummary(e.target.value)}
               className="w-full p-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
@@ -453,7 +515,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                 className="flex-1 py-1.5 rounded-xl border border-dashed border-emerald-200 text-[10px] text-emerald-700 flex items-center justify-center gap-1 bg-emerald-50/40"
               >
                 <ImageIcon size={14} />
-                Tomar foto
+                {lang === 'en' ? 'Take photo' : 'Tomar foto'}
               </button>
               <button
                 type="button"
@@ -461,7 +523,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                 className="flex-1 py-1.5 rounded-xl border border-dashed border-emerald-200 text-[10px] text-emerald-700 flex items-center justify-center gap-1 bg-emerald-50/10"
               >
                 <ImageIcon size={14} />
-                Subir imagen
+                {lang === 'en' ? 'Upload image' : 'Subir imagen'}
               </button>
               <input
                 ref={fileInputCameraRef}
@@ -482,7 +544,11 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
               <div className="mt-1 rounded-xl overflow-hidden border border-emerald-50">
                 <img
                   src={newsImagePreview}
-                  alt="Previsualización noticia"
+                  alt={
+                    lang === 'en'
+                      ? 'News preview'
+                      : 'Previsualización noticia'
+                  }
                   className="w-full h-20 object-cover"
                 />
               </div>
@@ -493,9 +559,15 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
               className="w-full mt-1 py-1.5 bg-emerald-600 text-white rounded-xl text-[11px] font-semibold disabled:opacity-60"
             >
               {savingNews
-                ? 'Guardando...'
+                ? lang === 'en'
+                  ? 'Saving...'
+                  : 'Guardando...'
                 : editingNewsId
-                ? 'Guardar cambios'
+                ? lang === 'en'
+                  ? 'Save changes'
+                  : 'Guardar cambios'
+                : lang === 'en'
+                ? 'Publish news'
                 : 'Publicar noticia'}
             </button>
           </form>
@@ -504,15 +576,27 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           {(news.length ? news : [
             {
               id: 1,
-              title: 'Jornada de limpieza comunitaria',
-              summary: 'Este sábado nos reuniremos para restaurar la zona norte del humedal.',
+              title:
+                lang === 'en'
+                  ? 'Community clean‑up day'
+                  : 'Jornada de limpieza comunitaria',
+              summary:
+                lang === 'en'
+                  ? 'This Saturday we will gather to restore the northern area of the wetland.'
+                  : 'Este sábado nos reuniremos para restaurar la zona norte del humedal.',
               image_url: null,
               published_at: null,
             },
             {
               id: 2,
-              title: 'Avistamiento destacado de Tingua Azul',
-              summary: 'Guardaparques registran aumento de avistamientos en la zona central.',
+              title:
+                lang === 'en'
+                  ? 'Notable sighting of Blue Gallinule'
+                  : 'Avistamiento destacado de Tingua Azul',
+              summary:
+                lang === 'en'
+                  ? 'Rangers report an increase in sightings in the central area.'
+                  : 'Guardaparques registran aumento de avistamientos en la zona central.',
               image_url: null,
               published_at: null,
             },
@@ -546,14 +630,14 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                     className="text-[10px] text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
                   >
                     <Edit2 size={12} />
-                    Editar
+                    {lang === 'en' ? 'Edit' : 'Editar'}
                   </button>
                   <button
                     onClick={() => handleDeleteNews(item.id)}
                     className="text-[10px] text-red-500 hover:text-red-700 flex items-center gap-1"
                   >
                     <Trash2 size={12} />
-                    Eliminar
+                    {lang === 'en' ? 'Delete' : 'Eliminar'}
                   </button>
                 </div>
               )}

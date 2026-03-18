@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from './components/AuthContext';
 import AuthScreen from './components/AuthScreen';
 import UserProfilePanel from './components/UserProfilePanel';
 import { Menu } from 'lucide-react';
+import { NotificationProvider } from './components/NotificationContext';
 
 const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>(AppTab.HOME);
@@ -90,7 +91,9 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => (
   <AuthProvider>
-    <AppContent />
+    <NotificationProvider>
+      <AppContent />
+    </NotificationProvider>
   </AuthProvider>
 );
 

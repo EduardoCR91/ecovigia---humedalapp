@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { useAuth } from './AuthContext';
+import { useNotifications } from './NotificationContext';
+import { useNetworkStatus } from './useNetworkStatus';
 
 interface EducationEvent {
   id: string;
@@ -29,6 +31,8 @@ type TopicId = 'aves' | 'plantas' | 'anfibios' | 'insectos';
 
 const Education: React.FC = () => {
   const { user } = useAuth();
+  const isOnline = useNetworkStatus();
+  const { isSupported, permission, requestPermission, notify } = useNotifications();
   const [isAdmin, setIsAdmin] = useState(false);
   const [events, setEvents] = useState<EducationEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
@@ -92,24 +96,41 @@ const Education: React.FC = () => {
   useEffect(() => {
     const loadEvents = async () => {
       setLoadingEvents(true);
-      const { data, error } = await supabase
-        .from('education_events')
-        .select('id, title, description, image_url, event_date, event_time, published_at')
-        .order('event_date', { ascending: true });
+      try {
+        if (!navigator.onLine) {
+          const cached = window.localStorage.getItem('ecovigia_education_events');
+          if (cached) {
+            setEvents(JSON.parse(cached));
+          }
+          setLoadingEvents(false);
+          return;
+        }
 
-      if (!error && data) {
-        const mapped: EducationEvent[] = data.map((row: any) => ({
-          id: row.id as string,
-          title: row.title,
-          description: row.description,
-          imageUrl: row.image_url || null,
-          eventDate: row.event_date,
-          eventTime: row.event_time || null,
-          publishedAt: row.published_at,
-        }));
-        setEvents(mapped);
+        const { data, error } = await supabase
+          .from('education_events')
+          .select('id, title, description, image_url, event_date, event_time, published_at')
+          .order('event_date', { ascending: true });
+
+        if (!error && data) {
+          const mapped: EducationEvent[] = data.map((row: any) => ({
+            id: row.id as string,
+            title: row.title,
+            description: row.description,
+            imageUrl: row.image_url || null,
+            eventDate: row.event_date,
+            eventTime: row.event_time || null,
+            publishedAt: row.published_at,
+          }));
+          setEvents(mapped);
+          try {
+            window.localStorage.setItem('ecovigia_education_events', JSON.stringify(mapped));
+          } catch {
+            // ignore storage errors
+          }
+        }
+      } finally {
+        setLoadingEvents(false);
       }
-      setLoadingEvents(false);
     };
 
     loadEvents().catch(() => setLoadingEvents(false));
@@ -221,6 +242,37 @@ const Education: React.FC = () => {
   return (
     <div className="p-4 animate-fadeIn pb-24">
       <h2 className="text-2xl font-bold text-emerald-900 mb-4">Aprende y Protege</h2>
+      
+      {!isOnline && (
+        <p className="mb-3 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-2xl px-3 py-2">
+          Estás sin conexión. Puedes consultar esta información educativa y los eventos que ya se
+          hayan cargado, pero no se actualizarán hasta que vuelvas a conectarte.
+        </p>
+      )}
+
+      {isSupported && (
+        <div className="mb-4 text-[11px] text-gray-600 bg-emerald-50/60 border border-emerald-100 rounded-2xl px-3 py-2 flex items-center justify-between gap-3">
+          <span>
+            Recibe recordatorios de eventos ambientales en tu dispositivo.
+          </span>
+          <button
+            type="button"
+            onClick={async () => {
+              const result = await requestPermission();
+              if (result === 'granted' && upcomingEvents[0]) {
+                const next = upcomingEvents[0];
+                notify('Próximo evento ambiental', {
+                  body: `${next.title} - ${next.eventDate} ${next.eventTime ?? ''}`.trim(),
+                });
+              }
+            }}
+            className="px-3 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-semibold disabled:opacity-60"
+            disabled={permission === 'granted'}
+          >
+            {permission === 'granted' ? 'Notificaciones activas' : 'Activar'}
+          </button>
+        </div>
+      )}
       
       <div className="grid grid-cols-2 gap-4 mb-8">
         {categories.map(cat => (

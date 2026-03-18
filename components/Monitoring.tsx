@@ -5,9 +5,13 @@ import L from 'leaflet';
 import { useMonitoringViewModel } from '../useMonitoringViewModel';
 import { useAuth } from './AuthContext';
 import { supabase } from '../services/supabaseClient';
+import { useNetworkStatus } from './useNetworkStatus';
+import { useLanguage } from './LanguageContext';
 
 const Monitoring: React.FC = () => {
   const vm = useMonitoringViewModel();
+  const isOnline = useNetworkStatus();
+  const { lang } = useLanguage();
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
   const [isReporting, setIsReporting] = useState(false);
   const [showConfirmSelection, setShowConfirmSelection] = useState(false);
@@ -199,8 +203,20 @@ const Monitoring: React.FC = () => {
 
   const handleOnSubmit = () => {
     if (!newReportDraft.title) return;
+    if (!isOnline) {
+      alert(
+        lang === 'en'
+          ? 'You cannot create or edit reports while you are offline.'
+          : 'No puedes crear o editar reportes mientras estás sin conexión.'
+      );
+      return;
+    }
     if (!username) {
-      alert('No se encontró tu nombre de usuario. Completa tu perfil e intenta de nuevo.');
+      alert(
+        lang === 'en'
+          ? 'Your username was not found. Please complete your profile and try again.'
+          : 'No se encontró tu nombre de usuario. Completa tu perfil e intenta de nuevo.'
+      );
       return;
     }
     const finalCoords = tempMarkerCoords || vm.userCoords || [4.642, -74.148];
@@ -383,17 +399,27 @@ const Monitoring: React.FC = () => {
   return (
     <div className="p-4 animate-fadeIn pb-24 relative">
 
+      {!isOnline && (
+        <p className="mb-3 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-2xl px-3 py-2">
+          {lang === 'en'
+            ? 'You are offline. You can review reports already loaded if available, but you cannot create, edit or delete reports until you reconnect.'
+            : 'Estás sin conexión. Puedes revisar reportes ya cargados si están disponibles, pero no podrás crear, editar ni eliminar reportes hasta recuperar la conexión.'}
+        </p>
+      )}
+
       <section className="bg-emerald-800 text-white rounded-3xl p-5 mb-6 shadow-lg relative overflow-hidden">
         <div className="relative z-10 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <CloudSun size={20} className="text-emerald-100" />
-            <span className="text-xs font-bold uppercase tracking-widest">Humedal de Techo</span>
+            <span className="text-xs font-bold uppercase tracking-widest">
+              {lang === 'en' ? 'Techo Wetland' : 'Humedal de Techo'}
+            </span>
             <button onClick={vm.fetchWeather} className={`ml-auto ${vm.loadingWeather ? 'animate-spin' : ''}`}><RefreshCw size={14}/></button>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div><span className="text-2xl font-bold">{vm.weather?.temp || '--'}°</span><p className="text-[10px] text-emerald-200">Temp</p></div>
-            <div><span className="text-2xl font-bold">{vm.weather?.humidity || '--'}%</span><p className="text-[10px] text-emerald-200">Humedad</p></div>
-            <div><span className="text-2xl font-bold">{vm.weather?.wind || '--'}</span><p className="text-[10px] text-emerald-200">Viento</p></div>
+            <div><span className="text-2xl font-bold">{vm.weather?.humidity || '--'}%</span><p className="text-[10px] text-emerald-200">{lang === 'en' ? 'Humidity' : 'Humedad'}</p></div>
+            <div><span className="text-2xl font-bold">{vm.weather?.wind || '--'}</span><p className="text-[10px] text-emerald-200">{lang === 'en' ? 'Wind' : 'Viento'}</p></div>
           </div>
         </div>
       </section>
@@ -445,14 +471,14 @@ const Monitoring: React.FC = () => {
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
             <BarChart3 size={20} className="text-emerald-600" />
-            Distribución de Reportes
+            {lang === 'en' ? 'Distribution of reports' : 'Distribución de Reportes'}
           </h3>
           <button 
             onClick={() => setShowStats(!showStats)} 
             className="text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1"
           >
             {showStats ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
-            {showStats ? 'Ocultar' : 'Ver Detalle'}
+            {showStats ? (lang === 'en' ? 'Hide': 'Ocultar') : (lang === 'en' ? 'Show' : 'Ver Detalle')}
           </button>
         </div>
 
@@ -473,9 +499,9 @@ const Monitoring: React.FC = () => {
             </div>
             <div className="grid grid-cols-3 gap-4 w-full">
               {[
-                { label: 'Fauna', color: 'bg-blue-500', value: vm.stats.fauna },
-                { label: 'Flora', color: 'bg-emerald-500', value: vm.stats.flora },
-                { label: 'Riesgo', color: 'bg-red-500', value: vm.stats.emergency },
+                { label: lang === 'en' ? 'Fauna' : 'Fauna', color: 'bg-blue-500', value: vm.stats.fauna },
+                { label: lang === 'en' ? 'Flora' : 'Flora', color: 'bg-emerald-500', value: vm.stats.flora },
+                { label: lang === 'en' ? 'Risk' : 'Riesgo', color: 'bg-red-500', value: vm.stats.emergency },
               ].map((item, i) => (
                 <div key={i} className="flex flex-col items-center">
                   <div className={`w-3 h-3 ${item.color} rounded-full mb-2 shadow-sm`} />
@@ -500,7 +526,15 @@ const Monitoring: React.FC = () => {
                   : 'bg-white text-emerald-600 border border-emerald-100'
               }`}
             >
-              {f === 'all' ? 'Todos' : f}
+              {f === 'all'
+                ? lang === 'en'
+                  ? 'All'
+                  : 'Todos'
+                : f === 'riesgo'
+                ? lang === 'en'
+                  ? 'Risk'
+                  : 'Riesgo'
+                : f}
             </button>
           ))}
         </div>
@@ -512,21 +546,21 @@ const Monitoring: React.FC = () => {
               disabled={page === 0}
               className="text-[11px] font-semibold text-emerald-700 disabled:text-gray-300"
             >
-              Últimos reportes
+              {lang === 'en' ? 'Latest reports' : 'Últimos reportes'}
             </button>
             <button
               onClick={() => canPrev && setPage(p => p - 1)}
               disabled={!canPrev}
               className="px-3 py-1 rounded-full text-[11px] border border-emerald-100 text-emerald-700 disabled:text-gray-300 disabled:border-gray-200"
-            >
-              Anterior
+            >{lang === 'en' ? 'Previous' : 'Anterior'}
+              
             </button>
             <button
               onClick={() => canNext && setPage(p => p + 1)}
               disabled={!canNext}
               className="px-3 py-1 rounded-full text-[11px] border border-emerald-100 text-emerald-700 disabled:text-gray-300 disabled:border-gray-200"
-            >
-              Siguiente
+            >{lang === 'en' ? 'Next' : 'Siguiente'}
+              
             </button>
           </div>
         )}
@@ -604,7 +638,9 @@ const Monitoring: React.FC = () => {
                       className="text-xs text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
                     >
                       <Edit2 size={14} />
-                      Editar
+                      {lang === 'en'
+                        ? 'Edit'
+                        : 'Editar'}
                     </button>
                   )}
                   {canDelete && (
@@ -621,7 +657,9 @@ const Monitoring: React.FC = () => {
                       className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1"
                     >
                       <Trash2 size={14} />
-                      Eliminar
+                      {lang === 'en'
+                        ? 'Delete'
+                        : 'Eliminar'}
                     </button>
                   )}
                 </div>

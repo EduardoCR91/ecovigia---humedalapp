@@ -21,7 +21,7 @@ export const useParticipationViewModel = () => {
   
   const [profile, setProfile] = useState<UserProfile>({
     name: 'Explorador del Techo',
-    bio: 'Amante de la naturaleza y guardián de los humedales de Bogotá.',
+    bio: '',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
     level: 'Guardián Nivel 1',
     reportsCount: 0,

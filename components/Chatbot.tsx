@@ -2,10 +2,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, User, Bot, Loader2 } from 'lucide-react';
 import { getGeminiResponse } from '../services/geminiService';
+import { useLanguage } from './LanguageContext';
 
 const Chatbot: React.FC = () => {
+  const { lang } = useLanguage();
   const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([
-    { role: 'bot', text: '¡Hola! Soy EcoBot. ¿Qué te gustaría saber sobre el Humedal de Techo hoy?' }
+    {
+      role: 'bot',
+      text:
+        lang === 'en'
+          ? 'Hi! I am EcoBot. What would you like to know about the Techo Wetland today?'
+          : '¡Hola! Soy EcoBot. ¿Qué te gustaría saber sobre el Humedal de Techo hoy?',
+    },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,10 +34,29 @@ const Chatbot: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await getGeminiResponse(userText);
-      setMessages(prev => [...prev, { role: 'bot', text: response || 'No pude obtener una respuesta.' }]);
+      const response = await getGeminiResponse(userText, lang === 'en' ? 'en' : 'es');
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'bot',
+          text:
+            response ||
+            (lang === 'en'
+              ? 'I could not get an answer.'
+              : 'No pude obtener una respuesta.'),
+        },
+      ]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'bot', text: 'Error al conectar con la naturaleza digital.' }]);
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'bot',
+          text:
+            lang === 'en'
+              ? 'Error connecting to the digital nature.'
+              : 'Error al conectar con la naturaleza digital.',
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -38,8 +65,14 @@ const Chatbot: React.FC = () => {
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] animate-fadeIn">
       <div className="bg-emerald-600 p-4 text-white shrink-0">
-        <h2 className="text-lg font-bold">Asistente EcoBot</h2>
-        <p className="text-xs text-emerald-100">Impulsado por Proyeccion Social Uniagustiniana</p>
+        <h2 className="text-lg font-bold">
+          {lang === 'en' ? 'EcoBot Assistant' : 'Asistente EcoBot'}
+        </h2>
+        <p className="text-xs text-emerald-100">
+          {lang === 'en'
+            ? 'Powered by Proyección Social Uniagustiniana'
+            : 'Impulsado por Proyección Social Uniagustiniana'}
+        </p>
       </div>
 
       <div 
@@ -69,7 +102,9 @@ const Chatbot: React.FC = () => {
           <div className="flex justify-start">
             <div className="flex gap-2 items-center bg-white p-3 rounded-2xl border border-emerald-50 text-emerald-600 text-sm shadow-sm">
               <Loader2 size={16} className="animate-spin" />
-              <span>EcoBot está pensando...</span>
+              <span>
+                {lang === 'en' ? 'EcoBot is thinking...' : 'EcoBot está pensando...'}
+              </span>
             </div>
           </div>
         )}
@@ -79,9 +114,11 @@ const Chatbot: React.FC = () => {
         <input 
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={e => setInput(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Pregunta sobre flora, fauna..."
+          placeholder={
+            lang === 'en' ? 'Ask about flora, fauna...' : 'Pregunta sobre flora, fauna...'
+          }
           className="flex-1 bg-gray-100 px-4 py-2 rounded-full text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
         />
         <button 

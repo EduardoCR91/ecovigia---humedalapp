@@ -3,7 +3,7 @@ left to right direction
 actor "Usuario" as user
 actor "Administrador" as admin
 
-rectangle "Educació\n\n" {
+rectangle "Educación\n\n" {
   usecase "Explorar módulo\n"Aprende y protege"" as UC_LEARN_MODULE
   usecase "Abrir ficha educativa\nen ventana emergente" as UC_OPEN_CARD
   usecase "Cerrar ficha educativa" as UC_CLOSE_CARD
