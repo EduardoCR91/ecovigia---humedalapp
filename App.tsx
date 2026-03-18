@@ -39,8 +39,8 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8faf8] safe-area-bottom pb-20">
-      <main className="max-w-md mx-auto min-h-screen bg-white shadow-xl relative overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-950 via-emerald-900 to-sky-700 safe-area-bottom pb-20">
+      <main className="max-w-md mx-auto min-h-screen bg-white/95 backdrop-blur-sm shadow-2xl relative overflow-x-hidden border border-emerald-900/10">
         {user && (
           <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 pt-4 pointer-events-none">
             <div className="pointer-events-auto bg-white/90 px-3 py-1.5 rounded-full shadow-sm border border-emerald-100">
