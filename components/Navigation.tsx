@@ -32,9 +32,11 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab }) => {
           }`}
         >
           <Icon size={24} className={activeTab === id ? 'fill-emerald-100' : ''} />
-          <span className="text-[10px] font-medium uppercase tracking-tighter">
-            {t(labelKey, fallback)}
-          </span>
+          {activeTab === id && (
+            <span className="text-[10px] font-medium uppercase tracking-tighter">
+              {t(labelKey, fallback)}
+            </span>
+          )}
         </button>
       ))}
     </nav>
